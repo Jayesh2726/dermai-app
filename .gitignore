@@ -5,6 +5,7 @@ package-lock.json
 # Environment variables
 .env.local
 .env.production
+.env
 
 # Build outputs
 dist/
