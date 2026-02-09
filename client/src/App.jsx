@@ -6,18 +6,24 @@ import Analyze from './pages/Analyze';
 import Learn from './pages/Learn';
 import About from './pages/About';
 import './styles/App.css';
+import Chatbot from './components/Chatbot';
 
 function App() {
   return (
     <Router>
       <div className="app">
         <Navbar />
+
+        {/* 🔥 Global Chatbot */}
+        <Chatbot />
+
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/analyze" element={<Analyze />} />
           <Route path="/learn" element={<Learn />} />
           <Route path="/about" element={<About />} />
         </Routes>
+
         <footer className="footer">
           <div className="container">
             <p className="text-center text-muted">
