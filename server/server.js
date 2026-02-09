@@ -13,13 +13,13 @@ import axios from "axios";
 import multer from "multer";
 import FormData from "form-data";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-// const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // =======================
 // App & Config
 // =======================
 const app = express();
 const PORT = process.env.PORT || 5000;
+
 const FLASK_API_URL =
   process.env.FLASK_API_URL ||
   "https://monkeypox-disease-detection-production.up.railway.app";
@@ -29,6 +29,7 @@ const FLASK_API_URL =
 // =======================
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // multer for image upload
 const upload = multer();
@@ -42,8 +43,7 @@ if (!process.env.GEMINI_API_KEY) {
 }
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-console.log("✅ GEMINI API KEY loaded");
+console.log("✅ Gemini API key loaded");
 
 // =======================
 // Health Check
@@ -51,8 +51,43 @@ console.log("✅ GEMINI API KEY loaded");
 app.get("/api/health", (req, res) => {
   res.json({
     status: "healthy",
-    message: "DermAI server is running",
+    message: "DermAI server running 🚀",
   });
+});
+
+// =======================
+// 🔥 Gemini Chatbot API (FIXED)
+// =======================
+app.post("/api/chat", async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message) {
+      return res.status(400).json({
+        error: "Message is required",
+      });
+    }
+
+    const model = genAI.getGenerativeModel({
+      model: "gemini-3-flash-preview",
+    });
+
+    const result = await model.generateContent(`
+You are a medical assistant chatbot for DermAI.
+Follow medical safety rules.
+If unsure, advise consulting a doctor.
+
+User question:
+${message}
+    `);
+
+    const reply = result.response.text();
+
+    res.json({ reply });
+  } catch (error) {
+    console.error("Chat error:", error.message);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // =======================
@@ -63,6 +98,12 @@ app.post(
   upload.single("file"),
   async (req, res) => {
     try {
+      if (!req.file) {
+        return res.status(400).json({
+          error: "Image file required",
+        });
+      }
+
       const formData = new FormData();
       formData.append(
         "file",
@@ -80,8 +121,7 @@ app.post(
     } catch (error) {
       console.error("Prediction error:", error.message);
       res.status(500).json({
-        error: "Failed to get prediction",
-        details: error.message,
+        error: "Prediction failed",
       });
     }
   }
@@ -114,39 +154,11 @@ app.get("/api/classes", async (req, res) => {
 });
 
 // =======================
-// 🔥 Gemini Chatbot API
-// =======================
-app.get("/api/chat", async (req, res) => {
-  try {
-    const { message } = req.body;
-
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.0-pro",
-    });
-
-    const result = await model.generateContent(`
-You are a medical assistant chatbot for DermAI.
-Answer clearly and safely.
-
-User question:
-${message}
-`);
-
-    const reply = result.response.text();
-
-    res.json({ reply });
-  } catch (error) {
-    console.error("Chat error:", error.message);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// =======================
 // Global Error Handler
 // =======================
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: "Something went wrong!" });
+  res.status(500).json({ error: "Internal Server Error" });
 });
 
 // =======================
