@@ -10,9 +10,10 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import axios from "axios";
-import OpenAI from "openai";
 import multer from "multer";
 import FormData from "form-data";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+// const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // =======================
 // App & Config
@@ -33,18 +34,16 @@ app.use(express.json());
 const upload = multer();
 
 // =======================
-// OpenAI Client
+// Gemini Client
 // =======================
-if (!process.env.OPENAI_API_KEY) {
-  console.error("❌ OPENAI_API_KEY not found in .env");
+if (!process.env.GEMINI_API_KEY) {
+  console.error("❌ GEMINI_API_KEY not found in .env");
   process.exit(1);
 }
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-console.log("✅ OPENAI KEY loaded");
+console.log("✅ GEMINI API KEY loaded");
 
 // =======================
 // Health Check
@@ -115,21 +114,27 @@ app.get("/api/classes", async (req, res) => {
 });
 
 // =======================
-// 🔥 Chatbot Test API (LLM)
+// 🔥 Gemini Chatbot API
 // =======================
 app.get("/api/chat", async (req, res) => {
   try {
     const { message } = req.body;
 
-    const response = await openai.responses.create({
-      model: "gpt-4.1-mini",
-      input: `You are a medical assistant chatbot.
-User: ${message}`,
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.0-pro",
     });
 
-    res.json({
-      reply: response.output_text,
-    });
+    const result = await model.generateContent(`
+You are a medical assistant chatbot for DermAI.
+Answer clearly and safely.
+
+User question:
+${message}
+`);
+
+    const reply = result.response.text();
+
+    res.json({ reply });
   } catch (error) {
     console.error("Chat error:", error.message);
     res.status(500).json({ error: error.message });
