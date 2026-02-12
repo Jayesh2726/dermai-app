@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import ResultsActions from '../components/ResultsActions'; // ✅ ADDED IMPORT
 import './Analyze.css';
 
 const FLASK_API_URL = 'https://monkeypox-disease-detection-production.up.railway.app';
@@ -57,8 +58,8 @@ const Analyze = () => {
 
       const data = await response.json();
       console.log('Prediction result:', data);
-      
-  // ✅ Normalize API response (VERY IMPORTANT FIX)
+
+      // ✅ Normalize API response
       const transformedResult = {
         prediction:
           typeof data.prediction === 'object'
@@ -128,16 +129,6 @@ const Analyze = () => {
                 Choose File
               </button>
             </div>
-
-            <div className="tips mt-3">
-              <h4>📋 Photo Tips</h4>
-              <ul>
-                <li>Use good lighting</li>
-                <li>Keep the image in focus</li>
-                <li>Fill the frame with the affected area</li>
-                <li>Avoid shadows and reflections</li>
-              </ul>
-            </div>
           </motion.div>
         ) : (
           <motion.div
@@ -159,31 +150,11 @@ const Analyze = () => {
                       onClick={analyzeImage}
                       disabled={loading}
                     >
-                      {loading ? (
-                        <>
-                          <div className="spinner-sm"></div>
-                          Analyzing...
-                        </>
-                      ) : (
-                        <>
-                          🔍 Analyze
-                        </>
-                      )}
+                      {loading ? 'Analyzing...' : '🔍 Analyze'}
                     </button>
                   )}
                 </div>
               </div>
-
-              {error && (
-                <div className="error-card card">
-                  <div className="error-icon">⚠️</div>
-                  <h3>Analysis Failed</h3>
-                  <p className="text-muted">{error}</p>
-                  <button className="btn btn-primary mt-2" onClick={analyzeImage}>
-                    Try Again
-                  </button>
-                </div>
-              )}
 
               {result && (
                 <motion.div
@@ -192,7 +163,7 @@ const Analyze = () => {
                   className="results-card card"
                 >
                   <h3 className="mb-2">Analysis Results</h3>
-                  
+
                   <div className="prediction-result">
                     <div className="prediction-label">
                       {result.prediction}
@@ -204,7 +175,8 @@ const Analyze = () => {
 
                   <div className="all-predictions mt-3">
                     <h4 className="mb-2">All Predictions</h4>
-                    {result.all_predictions && Object.keys(result.all_predictions).length > 0 ? (
+                    {result.all_predictions &&
+                    Object.keys(result.all_predictions).length > 0 ? (
                       Object.entries(result.all_predictions)
                         .sort(([, a], [, b]) => b - a)
                         .map(([className, confidence]) => (
@@ -222,18 +194,15 @@ const Analyze = () => {
                           </div>
                         ))
                     ) : (
-                      <p className="text-muted">No detailed predictions available</p>
+                      <p className="text-muted">
+                        No detailed predictions available
+                      </p>
                     )}
                   </div>
 
-                  <div className="result-actions mt-3">
-                    <button className="btn btn-primary">
-                      Learn More
-                    </button>
-                    <button className="btn btn-secondary" onClick={resetAnalysis}>
-                      New Analysis
-                    </button>
-                  </div>
+                  {/* ✅ REPLACED OLD BUTTONS WITH THIS */}
+                  <ResultsActions result={result} />
+
                 </motion.div>
               )}
             </div>
