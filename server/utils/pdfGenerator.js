@@ -1,27 +1,65 @@
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 
+// Precautions Information for PDF
+
+
 // Disease information for PDF
 const diseaseInfo = {
-  'Chickenpox': {
-    description: 'A highly contagious viral infection causing an itchy rash with fluid-filled blisters.',
+  Chickenpox: {
+    description:
+      'A highly contagious viral infection causing an itchy rash with fluid-filled blisters.',
     learnMoreUrl: '/learn#chickenpox',
-    color: '#3B82F6'
+    color: '#3B82F6',
+    precautions: [
+      'Avoid scratching blisters to prevent infection.',
+      'Stay isolated until all blisters have crusted.',
+      'Drink plenty of fluids and take adequate rest.',
+      'Use soothing lotions like calamine for itching.',
+      'Consult a doctor if fever becomes severe.'
+    ]
   },
-  'Measles': {
-    description: 'A serious viral infection with fever and characteristic red rash.',
+
+  Measles: {
+    description:
+      'A serious viral infection with fever and characteristic red rash.',
     learnMoreUrl: '/learn#measles',
-    color: '#EF4444'
+    color: '#EF4444',
+    precautions: [
+      'Stay isolated to prevent spreading the virus.',
+      'Get plenty of rest and drink fluids.',
+      'Take fever-reducing medicines as prescribed.',
+      'Avoid bright light if eyes are sensitive.',
+      'Seek medical help if breathing issues occur.'
+    ]
   },
-  'Monkeypox': {
-    description: 'A viral disease with symptoms similar to smallpox, though typically less severe.',
+
+  Monkeypox: {
+    description:
+      'A viral disease with symptoms similar to smallpox, though typically less severe.',
     learnMoreUrl: '/learn#monkeypox',
-    color: '#8B5CF6'
+    color: '#8B5CF6',
+    precautions: [
+      'Avoid close contact with infected individuals.',
+      'Do not touch rash or skin lesions.',
+      'Wash hands frequently with soap.',
+      'Wear protective clothing if required.',
+      'Consult a healthcare provider immediately.'
+    ]
   },
-  'Normal': {
-    description: 'Healthy skin with no signs of the diseases analyzed by our system.',
+
+  Normal: {
+    description:
+      'Healthy skin with no signs of the diseases analyzed by our system.',
     learnMoreUrl: '/learn#normal',
-    color: '#10B981'
+    color: '#10B981',
+    precautions: [
+      'Maintain a regular skincare routine.',
+      'Use sunscreen daily.',
+      'Stay hydrated and eat balanced diet.',
+      'Avoid excessive sun exposure.',
+      'Visit dermatologist for routine check-ups.'
+    ]
   }
 };
 
@@ -129,13 +167,36 @@ export const generatePDF = async (analysisData, outputPath) => {
         tableY += 25;
       });
 
+      doc.moveDown(2);
+
+      // Precautions Section
+         doc.fontSize(14)
+            .fillColor('#1F2937')
+            .font('Helvetica-Bold')
+            .text('Recommended Precautions:', { underline: true });
+
+         doc.moveDown(0.5);
+
+         doc.fontSize(11)
+            .fillColor('#374151')
+            .font('Helvetica');
+
+         (diseaseDetails.precautions || []).forEach((item) => {
+         doc.text(`• ${item}`, {
+            indent: 20,
+            lineGap: 4
+         });
+         });
+
+         doc.moveDown(2);
+
       doc.moveDown(3);
 
       // Important Notice
       doc.fontSize(10)
          .fillColor('#DC2626')
          .font('Helvetica-Bold')
-         .text('⚠️ IMPORTANT MEDICAL DISCLAIMER', { align: 'center' });
+         .text('WARNING: IMPORTANT MEDICAL DISCLAIMER', { align: 'center' });
 
       doc.moveDown(0.5);
       doc.fontSize(9)
