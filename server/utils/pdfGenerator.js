@@ -64,19 +64,17 @@ function formatConfidence(conf) {
   return num > 1 ? num.toFixed(1) : (num * 100).toFixed(1);
 }
 
-function checkPageSpace(doc, requiredHeight = 100) {
-  if (doc.y === doc.page.margins.top) return;
-  if (doc.y + requiredHeight > doc.page.height - doc.page.margins.bottom - 60) {
-    doc.addPage();
-  }
-}
-
 /* ---------------------- PDF Generator ---------------------- */
 
 export const generatePDF = async (analysisData, outputPath, imageBuffer = null) => {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ margin: 50, size: 'A4' });
+      const doc = new PDFDocument({ 
+        margin: 50, 
+        size: 'A4',
+        bufferPages: true  // Important: buffer all pages
+      });
+      
       const stream = fs.createWriteStream(outputPath);
       doc.pipe(stream);
 
@@ -84,125 +82,105 @@ export const generatePDF = async (analysisData, outputPath, imageBuffer = null) 
       const confidenceValue = formatConfidence(analysisData.confidence);
       const details = diseaseInfo[disease] || diseaseInfo.Normal;
 
-      /* ---------------- PAGE 1: HEADER ---------------- */
+      // ============ PAGE 1: REPORT ============
 
+      // Header
       doc.fontSize(24).fillColor('#2563EB').text('DermAI Analysis Report', { align: 'center' });
-      doc.moveDown(0.5);
       doc.fontSize(10).fillColor('#6B7280').text(`Generated on ${new Date().toLocaleString()}`, { align: 'center' });
-      doc.moveDown(1);
-      doc.strokeColor('#E5E7EB').lineWidth(1).moveTo(50, doc.y).lineTo(545, doc.y).stroke();
-      doc.moveDown(2);
-
-      /* ---------------- PREDICTION BOX ---------------- */
-
-      checkPageSpace(doc, 150);
-      const boxTop = doc.y;
-      doc.roundedRect(50, boxTop, 495, 120, 10).fillAndStroke(details.color + '15', details.color);
-      doc.fontSize(18).fillColor(details.color).text('Predicted Condition', 70, boxTop + 10);
-      doc.fontSize(26).fillColor('#1F2937').text(disease, 70, boxTop + 35);
-      doc.fontSize(14).fillColor('#6B7280').text(`Confidence: ${confidenceValue}%`, 70, boxTop + 70);
-      doc.y = boxTop + 130;
-
-      /* ---------------- DESCRIPTION ---------------- */
-
-      checkPageSpace(doc, 60);
-      doc.fontSize(12).fillColor('#374151').font('Helvetica-Bold').text('About this condition:');
       doc.moveDown(0.5);
-      doc.fontSize(11).fillColor('#6B7280').font('Helvetica').text(details.description, { align: 'justify' });
-      doc.moveDown(1.5);
+      doc.strokeColor('#E5E7EB').lineWidth(1).moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+      doc.moveDown(1);
 
-      /* ---------------- DETAILED PREDICTIONS (if available) ---------------- */
+      // Prediction Box
+      let y = doc.y;
+      doc.roundedRect(50, y, 495, 100, 10).fillAndStroke(details.color + '15', details.color);
+      doc.fontSize(16).fillColor(details.color).text('Predicted Condition', 70, y + 10);
+      doc.fontSize(24).fillColor('#1F2937').text(disease, 70, y + 35);
+      doc.fontSize(12).fillColor('#6B7280').text(`Confidence: ${confidenceValue}%`, 70, y + 65);
+      doc.y = y + 110;
 
+      // Description
+      doc.fontSize(12).fillColor('#374151').font('Helvetica-Bold').text('About this condition:');
+      doc.fontSize(10).fillColor('#6B7280').font('Helvetica').text(details.description, { align: 'justify' });
+      doc.moveDown(1);
+
+      // Detailed Predictions
       if (analysisData.all_predictions && Object.keys(analysisData.all_predictions).length > 0) {
-        checkPageSpace(doc, 120);
-        doc.fontSize(14).fillColor('#1F2937').font('Helvetica-Bold').text('Detailed Predictions:');
-        doc.moveDown(0.8);
+        doc.fontSize(12).fillColor('#1F2937').font('Helvetica-Bold').text('Detailed Predictions:');
+        doc.moveDown(0.5);
 
         const sorted = Object.entries(analysisData.all_predictions).sort(([, a], [, b]) => b - a);
         sorted.forEach(([className, conf]) => {
-          checkPageSpace(doc, 22);
           const percent = formatConfidence(conf);
           const isTop = className === disease;
-          const y = doc.y;
+          y = doc.y;
 
-          doc.fontSize(11).fillColor(isTop ? details.color : '#374151').font(isTop ? 'Helvetica-Bold' : 'Helvetica').text(className, 70, y);
-          doc.rect(250, y - 2, 250, 14).fillAndStroke('#F3F4F6', '#E5E7EB');
+          doc.fontSize(10).fillColor(isTop ? details.color : '#374151').font(isTop ? 'Helvetica-Bold' : 'Helvetica').text(className, 70, y);
+          doc.rect(250, y - 2, 250, 12).fillAndStroke('#F3F4F6', '#E5E7EB');
           const barWidth = (Math.min(parseFloat(percent), 100) / 100) * 250;
-          doc.rect(250, y - 2, barWidth, 14).fill(isTop ? details.color : '#9CA3AF');
-          doc.fontSize(10).fillColor('#374151').font('Helvetica').text(`${percent}%`, 510, y);
-          doc.moveDown(1.3);
+          doc.rect(250, y - 2, barWidth, 12).fill(isTop ? details.color : '#9CA3AF');
+          doc.fontSize(9).fillColor('#374151').font('Helvetica').text(`${percent}%`, 510, y);
+          doc.y = y + 18;
         });
         doc.moveDown(0.5);
       }
 
-      /* ---------------- PRECAUTIONS ---------------- */
+      // Precautions
+      doc.fontSize(12).fillColor('#1F2937').font('Helvetica-Bold').text('Recommended Precautions:');
+      doc.fontSize(10).fillColor('#374151').font('Helvetica');
+      details.precautions.forEach(p => {
+        doc.text(`• ${p}`, { indent: 15, lineGap: 2 });
+      });
+      doc.moveDown(1);
 
-      checkPageSpace(doc, 100);
-      doc.fontSize(14).fillColor('#1F2937').font('Helvetica-Bold').text('Recommended Precautions:');
-      doc.moveDown(0.5);
-      doc.fontSize(11).fillColor('#374151').font('Helvetica');
-      details.precautions.forEach(p => doc.text(`• ${p}`, { indent: 20, lineGap: 3 }));
-      doc.moveDown(1.5);
-
-      /* ---------------- DISCLAIMER ---------------- */
-
-      checkPageSpace(doc, 80);
-      doc.fontSize(10).fillColor('#DC2626').font('Helvetica-Bold').text('⚠️ IMPORTANT MEDICAL DISCLAIMER', { align: 'center' });
-      doc.moveDown(0.5);
-      doc.fontSize(9).fillColor('#374151').font('Helvetica').text(
+      // Disclaimer
+      doc.fontSize(9).fillColor('#DC2626').font('Helvetica-Bold').text('⚠️ IMPORTANT MEDICAL DISCLAIMER', { align: 'center' });
+      doc.fontSize(8).fillColor('#374151').font('Helvetica').text(
         'This analysis is for educational purposes only and does not constitute a medical diagnosis. Always consult a qualified healthcare provider.',
         { align: 'justify', lineGap: 2 }
       );
-      doc.moveDown(1.2);
+      doc.moveDown(0.8);
 
-      /* ---------------- LEARN MORE BOX ---------------- */
-
-      checkPageSpace(doc, 65);
+      // Learn More Box
       const url = `https://dermai.app${details.learnMoreUrl || ''}`;
-      const learnTop = doc.y;
-      doc.roundedRect(50, learnTop, 495, 55, 10).fillAndStroke('#DBEAFE', '#3B82F6');
-      doc.fontSize(11).fillColor('#1E40AF').font('Helvetica-Bold').text(`Learn More About ${disease}`, 70, learnTop + 10);
-      doc.fontSize(8).fillColor('#1E40AF').font('Helvetica').text(url, 70, learnTop + 28, { width: 460 });
+      y = doc.y;
+      doc.roundedRect(50, y, 495, 50, 10).fillAndStroke('#DBEAFE', '#3B82F6');
+      doc.fontSize(10).fillColor('#1E40AF').font('Helvetica-Bold').text(`Learn More About ${disease}`, 70, y + 10);
+      doc.fontSize(7).fillColor('#1E40AF').font('Helvetica').text(url, 70, y + 28);
 
-      /* ---------------- PAGE 1 FOOTER (Fixed Position) ---------------- */
-
-      doc.fontSize(8).fillColor('#9CA3AF').text(
-        'DermAI - AI-Powered Skin Disease Detection | www.dermai.app',
-        50,
-        doc.page.height - 30,
-        { align: 'center' }
-      );
-
-      /* ---------------- PAGE 2: IMAGE PAGE ---------------- */
+      // ============ PAGE 2: IMAGE ============
 
       if (imageBuffer) {
-        doc.addPage(); // Always add new page for image
+        doc.addPage();
 
-        doc.fontSize(20).fillColor('#2563EB').text('Uploaded Image', { align: 'center' });
-        doc.moveDown(1.5);
+        doc.fontSize(18).fillColor('#2563EB').text('Uploaded Image', { align: 'center' });
+        doc.moveDown(1);
 
         try {
           const img = doc.openImage(imageBuffer);
           const maxWidth = doc.page.width - 100;
-          const maxHeight = doc.page.height - 180;
+          const maxHeight = doc.page.height - 150;
           const scale = Math.min(maxWidth / img.width, maxHeight / img.height, 1);
           const w = img.width * scale;
           const h = img.height * scale;
           const x = (doc.page.width - w) / 2;
-          const y = doc.y;
 
-          doc.image(imageBuffer, x, y, { width: w, height: h });
+          doc.image(imageBuffer, x, doc.y, { width: w, height: h });
         } catch (err) {
-          doc.fontSize(12).fillColor('#DC2626').text('Image could not be displayed.', { align: 'center' });
+          doc.fontSize(11).fillColor('#DC2626').text('Image could not be displayed.', { align: 'center' });
         }
+      }
 
-        /* ---------------- PAGE 2 FOOTER ---------------- */
+      // ============ ADD FOOTERS TO ALL PAGES ============
 
-        doc.fontSize(8).fillColor('#9CA3AF').text(
+      const range = doc.bufferedPageRange();
+      for (let i = 0; i < range.count; i++) {
+        doc.switchToPage(i);
+        doc.fontSize(7).fillColor('#9CA3AF').text(
           'DermAI - AI-Powered Skin Disease Detection | www.dermai.app',
           50,
           doc.page.height - 30,
-          { align: 'center' }
+          { align: 'center', lineBreak: false }
         );
       }
 

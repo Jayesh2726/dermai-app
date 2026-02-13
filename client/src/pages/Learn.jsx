@@ -8,6 +8,7 @@ const diseases = [
     name: 'Chickenpox',
     icon: '🦠',
     description: 'A highly contagious viral infection causing itchy rash with blisters.',
+    link: 'https://www.cdc.gov/chickenpox/about/index.html', // 🔗 Add official link here
     symptoms: [
       'Itchy rash with fluid-filled blisters',
       'Fever (usually mild)',
@@ -28,6 +29,7 @@ const diseases = [
     name: 'Measles',
     icon: '🌡️',
     description: 'A highly contagious viral disease with fever and red rash.',
+    link: 'https://www.who.int/news-room/fact-sheets/detail/measles', // 🔗 Add official link here
     symptoms: [
       'High fever (104°F)',
       'Cough and runny nose',
@@ -48,6 +50,7 @@ const diseases = [
     name: 'Monkeypox',
     icon: '🔬',
     description: 'A viral disease with symptoms similar to smallpox.',
+    link: 'https://www.who.int/news-room/fact-sheets/detail/mpox', // 🔗 Add official link here
     symptoms: [
       'Fever and chills',
       'Headache and muscle aches',
@@ -70,6 +73,7 @@ const diseases = [
     name: 'Healthy Skin',
     icon: '✨',
     description: 'Characteristics of normal, healthy skin.',
+    link: 'https://www.who.int/news-room/fact-sheets/detail/mpox', // 🔗 Add official link here
     symptoms: [
       'Even skin tone',
       'Proper moisture balance',
@@ -99,6 +103,7 @@ const Learn = () => {
 
   if (selectedDisease) {
     const disease = diseases.find(d => d.id === selectedDisease);
+
     return (
       <div className="learn-page">
         <div className="container">
@@ -120,6 +125,7 @@ const Learn = () => {
               <p className="text-muted">{disease.description}</p>
             </div>
 
+            {/* Symptoms & Treatment */}
             <div className="grid grid-2 mt-3">
               <div className="detail-section card">
                 <h2>Symptoms</h2>
@@ -140,6 +146,23 @@ const Learn = () => {
               </div>
             </div>
 
+            {/* 🔗 Official Link Button (Only if link exists) */}
+            {disease.link && (
+              <div className="text-center mt-3">
+                <motion.a
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  href={disease.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary"
+                >
+                  🔗 Read More / Official Information
+                </motion.a>
+              </div>
+            )}
+
+            {/* Reminder */}
             <div className="disclaimer-card card mt-3">
               <h3>⚠️ Important Reminder</h3>
               <p>
