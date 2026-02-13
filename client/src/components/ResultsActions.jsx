@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ResultsActions.css';
 
-const ResultsActions = ({ result }) => {
+const ResultsActions = ({ result, imageFile }) => {
   const navigate = useNavigate();
   const [downloadingPDF, setDownloadingPDF] = useState(false);
 
@@ -19,12 +19,20 @@ const ResultsActions = ({ result }) => {
     setDownloadingPDF(true);
 
     try {
+      // Create FormData to send both result data and image
+      const formData = new FormData();
+      formData.append('prediction', result.prediction || result.predicted_class);
+      formData.append('confidence', result.confidence);
+      formData.append('all_predictions', JSON.stringify(result.all_predictions || {}));
+      
+      // Add image if available
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
       const response = await fetch('http://localhost:5000/api/pdf/generate', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(result),
+        body: formData, // Send as FormData, not JSON
       });
 
       if (!response.ok) {
@@ -38,7 +46,8 @@ const ResultsActions = ({ result }) => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `DermAI_Report_${result.prediction.replace(/\s/g, '_')}_${Date.now()}.pdf`;
+      const disease = result.prediction || result.predicted_class;
+      link.download = `DermAI_Report_${disease.replace(/\s/g, '_')}_${Date.now()}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -53,8 +62,9 @@ const ResultsActions = ({ result }) => {
   };
 
   const learnMore = () => {
-    if (result && result.prediction) {
-      const anchor = diseaseLinks[result.prediction] || '#';
+    if (result && (result.prediction || result.predicted_class)) {
+      const disease = result.prediction || result.predicted_class;
+      const anchor = diseaseLinks[disease] || '#';
       navigate('/learn' + anchor);
     }
   };

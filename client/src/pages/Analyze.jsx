@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import ResultsActions from '../components/ResultsActions'; // ✅ ADDED IMPORT
+import ResultsActions from '../components/ResultsActions';
 import './Analyze.css';
 
 const FLASK_API_URL = 'https://monkeypox-disease-detection-production.up.railway.app';
@@ -57,20 +57,16 @@ const Analyze = () => {
       }
 
       const data = await response.json();
-      console.log('Prediction result:', data);
 
-      // ✅ Normalize API response
       const transformedResult = {
         prediction:
           typeof data.prediction === 'object'
             ? data.prediction.predicted_class
             : data.predicted_class || data.prediction || 'Unknown',
-
         confidence:
           typeof data.prediction === 'object'
             ? data.prediction.confidence
             : data.confidence ?? 0,
-
         all_predictions: data.all_predictions || {},
       };
 
@@ -125,9 +121,7 @@ const Analyze = () => {
                 accept="image/*"
                 onChange={handleImageChange}
               />
-              <button className="btn btn-primary mt-2">
-                Choose File
-              </button>
+              <button className="btn btn-primary mt-2">Choose File</button>
             </div>
           </motion.div>
         ) : (
@@ -165,9 +159,7 @@ const Analyze = () => {
                   <h3 className="mb-2">Analysis Results</h3>
 
                   <div className="prediction-result">
-                    <div className="prediction-label">
-                      {result.prediction}
-                    </div>
+                    <div className="prediction-label">{result.prediction}</div>
                     <div className="confidence-score">
                       {(result.confidence * 100).toFixed(1)}% Confidence
                     </div>
@@ -175,8 +167,7 @@ const Analyze = () => {
 
                   <div className="all-predictions mt-3">
                     <h4 className="mb-2">All Predictions</h4>
-                    {result.all_predictions &&
-                    Object.keys(result.all_predictions).length > 0 ? (
+                    {result.all_predictions && Object.keys(result.all_predictions).length > 0 ? (
                       Object.entries(result.all_predictions)
                         .sort(([, a], [, b]) => b - a)
                         .map(([className, confidence]) => (
@@ -194,15 +185,12 @@ const Analyze = () => {
                           </div>
                         ))
                     ) : (
-                      <p className="text-muted">
-                        No detailed predictions available
-                      </p>
+                      <p className="text-muted">No detailed predictions available</p>
                     )}
                   </div>
 
-                  {/* ✅ REPLACED OLD BUTTONS WITH THIS */}
-                  <ResultsActions result={result} />
-
+                  {/* ONLY ONE ResultsActions component - it has both buttons */}
+                  <ResultsActions result={result} imageFile={image} />
                 </motion.div>
               )}
             </div>

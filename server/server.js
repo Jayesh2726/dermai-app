@@ -15,6 +15,7 @@ import FormData from "form-data";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import pdfRouter from "./routes/pdf.js";
 import chatRouter from "./routes/chat.js";
+import uploadRouter from "./routes/upload.js"; // NEW
 
 // =======================
 // App & Config
@@ -36,12 +37,13 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use("/api/pdf", pdfRouter);
 app.use("/api/chat", chatRouter);
+app.use("/api/upload", uploadRouter); // NEW
 
 // multer for image upload
 const upload = multer();
 
 // =======================
-// Gemini Client
+// Gemini Client (used by chatRouter, kept here for proxy)
 // =======================
 if (!process.env.GEMINI_API_KEY) {
   console.error("❌ GEMINI_API_KEY not found in .env");
@@ -59,41 +61,6 @@ app.get("/api/health", (req, res) => {
     status: "healthy",
     message: "DermAI server running 🚀",
   });
-});
-
-// =======================
-// 🔥 Gemini Chatbot API (FIXED)
-// =======================
-app.post("/api/chat", async (req, res) => {
-  try {
-    const { message } = req.body;
-
-    if (!message) {
-      return res.status(400).json({
-        error: "Message is required",
-      });
-    }
-
-    const model = genAI.getGenerativeModel({
-      model: "gemini-3-flash-preview",
-    });
-
-    const result = await model.generateContent(`
-You are a medical assistant chatbot for DermAI.
-Follow medical safety rules.
-If unsure, advise consulting a doctor.
-
-User question:
-${message}
-    `);
-
-    const reply = result.response.text();
-
-    res.json({ reply });
-  } catch (error) {
-    console.error("Chat error:", error.message);
-    res.status(500).json({ error: error.message });
-  }
 });
 
 // =======================
