@@ -1,41 +1,60 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import dotenv from "dotenv";
+dotenv.config();
+import OpenAI from "openai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 /**
  * Text-only chat (used by /api/chat)
  */
 export async function askLLM(systemContext, userMessage) {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",  // fast & cost effective
+    messages: [
+      { role: "system", content: systemContext },
+      { role: "user", content: userMessage }
+    ],
+    temperature: 0.7,
+  });
 
-  const prompt = `${systemContext}\n\nUser: ${userMessage}\nAssistant:`;
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  return response.text();
+  return response.choices[0].message.content;
 }
 
 /**
- * Vision analysis for dermatology images (Gemini Pro Vision)
+ * Vision analysis for dermatology images
  */
 export async function analyzeDermatologyImage(imageBuffer) {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const base64Image = imageBuffer.toString("base64");
 
-  // Convert buffer to base64 and prepare the image part
-  const imageBase64 = imageBuffer.toString('base64');
-  const imageMimeType = 'image/jpeg'; // adjust if you support PNG/WebP
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",  // supports vision
+    messages: [
+      {
+        role: "system",
+        content: "You are a dermatology AI assistant."
+      },
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: `Analyze this skin lesion image. 
+Describe visual characteristics, possible conditions (e.g., benign nevus, melanoma, basal cell carcinoma), 
+and indicate urgency (low, moderate, high). Keep response under 200 words and professional.`
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:image/jpeg;base64,${base64Image}`
+            }
+          }
+        ]
+      }
+    ],
+    max_tokens: 300,
+  });
 
-  const prompt = `You are a dermatology AI assistant. Analyze this skin lesion image. 
-Describe the visual characteristics, possible conditions (e.g., benign nevus, melanoma, basal cell carcinoma), 
-and indicate urgency (low, moderate, high). Keep the response concise (max 200 words) and professional.`;
-
-  const imagePart = {
-    inlineData: {
-      data: imageBase64,
-      mimeType: imageMimeType,
-    },
-  };
-
-  const result = await model.generateContent([prompt, imagePart]);
-  const response = await result.response;
-  return response.text();
+  return response.choices[0].message.content;
 }

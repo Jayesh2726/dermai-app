@@ -1,13 +1,12 @@
-import { siteContent } from "../data/siteContent.js";
+import siteContent from "../data/siteContent.js";
 
 export function retrieveRelevantContent(query) {
-  const keywords = query.toLowerCase().split(" ");
+  if (!query) return [];
 
-  const matches = siteContent.filter(item =>
-    keywords.some(word =>
-      item.content.toLowerCase().includes(word)
-    )
+  const lowerQuery = query.toLowerCase();
+
+  return siteContent.filter(item =>
+    item.title.toLowerCase().includes(lowerQuery) ||
+    item.content.toLowerCase().includes(lowerQuery)
   );
-
-  return matches.map(m => m.content).join("\n");
 }

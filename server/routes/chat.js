@@ -7,23 +7,23 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   const { message } = req.body;
 
-  const websiteInfo = retrieveRelevantContent(message);
+  const contextDocs =  retrieveRelevantContent(message);
+
+  const contextText = contextDocs
+    .map(doc => `${doc.title}: ${doc.content}`)
+    .join("\n\n");
 
   const systemPrompt = `
-You are Dermai, an AI skin assistant.
+You are a dermatology AI assistant.
+Use the provided context to answer.
 
-Use ONLY the following website information to answer:
-${websiteInfo}
-
-Rules:
-- If the answer is not in the website info, say you are not sure.
-- Be friendly and simple.
-- Do not diagnose.
+Context:
+${contextText}
 `;
 
-  const reply = await askLLM(systemPrompt, message);
+  const response = await askLLM(systemPrompt, message);
 
-  res.json({ reply });
+  res.json({ reply: response });
 });
 
 export default router;

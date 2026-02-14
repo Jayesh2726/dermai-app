@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import "./Chatbot.css";
 
@@ -180,7 +181,7 @@ const Chatbot = () => {
                       </div>
                     )}
                     <div className="message-bubble">
-                      <p>{c.text}</p>
+                      <ReactMarkdown>{c.text}</ReactMarkdown>
                       <span className="message-time">
                         {new Date().toLocaleTimeString([], {
                           hour: "2-digit",

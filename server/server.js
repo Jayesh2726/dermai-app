@@ -45,13 +45,13 @@ const upload = multer();
 // =======================
 // Gemini Client (used by chatRouter, kept here for proxy)
 // =======================
-if (!process.env.GEMINI_API_KEY) {
-  console.error("❌ GEMINI_API_KEY not found in .env");
+if (!process.env.OPENAI_API_KEY) {
+  console.error("❌ OPENAI_API_KEY not found in .env");
   process.exit(1);
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-console.log("✅ Gemini API key loaded");
+const genAI = new GoogleGenerativeAI(process.env.OPENAI_API_KEY);
+console.log("✅ OpenAI API key loaded");
 
 // =======================
 // Health Check
