@@ -29,3 +29,6 @@ Thumbs.db
 
 # image
 *.jpg/
+
+
+RAGFastAPI/data/*.json
