@@ -31,6 +31,6 @@ Thumbs.db
 *.jpg/
 
 
-RAGFastAPI/data/*.json
+
 
 __pycache__/
