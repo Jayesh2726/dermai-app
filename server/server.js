@@ -23,8 +23,8 @@ import uploadRouter from "./routes/upload.js"; // NEW
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const FLASK_API_URL =
-  process.env.FLASK_API_URL ||
+const Fast_API_URL =
+  process.env.Fast_API_URL ||
   "https://monkeypox-disease-detection-production.up.railway.app";
 
 // =======================
@@ -64,7 +64,7 @@ app.get("/api/health", (req, res) => {
 });
 
 // =======================
-// Proxy → Flask (Prediction)
+// Proxy → Fast (Prediction)
 // =======================
 app.post(
   "/api/predict",
@@ -85,7 +85,7 @@ app.post(
       );
 
       const response = await axios.post(
-        `${FLASK_API_URL}/api/predict`,
+        `${Fast_API_URL}/api/predict`,
         formData,
         { headers: formData.getHeaders() }
       );
@@ -101,11 +101,11 @@ app.post(
 );
 
 // =======================
-// Flask API Info
+// Fast API Info
 // =======================
 app.get("/api/info", async (req, res) => {
   try {
-    const response = await axios.get(`${FLASK_API_URL}/api/info`);
+    const response = await axios.get(`${Fast_API_URL}/api/info`);
     res.json(response.data);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -113,12 +113,12 @@ app.get("/api/info", async (req, res) => {
 });
 
 // =======================
-// Flask Classes
+// Fast Classes
 // =======================
 app.get("/api/classes", async (req, res) => {
   try {
     const response = await axios.get(
-      `${FLASK_API_URL}/api/classes`
+      `${Fast_API_URL}/api/classes`
     );
     res.json(response.data);
   } catch (error) {
@@ -139,5 +139,5 @@ app.use((err, req, res, next) => {
 // =======================
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📡 Flask API → ${FLASK_API_URL}`);
+  console.log(`📡 Fast API → ${Fast_API_URL}`);
 });
