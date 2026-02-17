@@ -6,16 +6,14 @@ import Analyze from './pages/Analyze';
 import Learn from './pages/Learn';
 import About from './pages/About';
 import './styles/App.css';
-import Chatbot from './components/Chatbot';
+// ❌ Remove: import Chatbot from './components/Chatbot';
 
 function App() {
   return (
     <Router>
       <div className="app">
         <Navbar />
-
-        {/* 🔥 Global Chatbot */}
-        <Chatbot />
+        {/* ❌ Removed global <Chatbot /> — now lives in Analyze.jsx only */}
 
         <Routes>
           <Route path="/" element={<Home />} />

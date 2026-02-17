@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import ResultsActions from '../components/ResultsActions';
+import Chatbot from '../components/Chatbot';
 import './Analyze.css';
 
 const FLASK_API_URL = 'https://monkeypox-disease-detection-production.up.railway.app';
@@ -33,13 +34,10 @@ const Analyze = () => {
     }
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
+  const handleDragOver = (e) => e.preventDefault();
 
   const analyzeImage = async () => {
     if (!image) return;
-
     setLoading(true);
     setError(null);
 
@@ -52,9 +50,7 @@ const Analyze = () => {
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
       const data = await response.json();
 
@@ -99,11 +95,7 @@ const Analyze = () => {
         </motion.div>
 
         {!preview ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="upload-section card"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="upload-section card">
             <div
               className="upload-zone"
               onDrop={handleDrop}
@@ -112,42 +104,26 @@ const Analyze = () => {
             >
               <div className="upload-icon">📷</div>
               <h3>Upload Skin Image</h3>
-              <p className="text-muted">
-                Drag and drop an image here, or click to browse
-              </p>
-              <input
-                type="file"
-                id="fileInput"
-                accept="image/*"
-                onChange={handleImageChange}
-              />
+              <p className="text-muted">Drag and drop an image here, or click to browse</p>
+              <input type="file" id="fileInput" accept="image/*" onChange={handleImageChange} />
               <button className="btn btn-primary mt-2">Choose File</button>
             </div>
           </motion.div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="analysis-section"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="analysis-section">
             <div className="grid grid-2">
               <div className="preview-card card">
                 <h3 className="mb-2">Your Image</h3>
                 <img src={preview} alt="Preview" className="preview-image" />
                 <div className="preview-actions mt-2">
-                  <button className="btn btn-secondary" onClick={resetAnalysis}>
-                    Upload New
-                  </button>
+                  <button className="btn btn-secondary" onClick={resetAnalysis}>Upload New</button>
                   {!result && (
-                    <button
-                      className="btn btn-primary"
-                      onClick={analyzeImage}
-                      disabled={loading}
-                    >
+                    <button className="btn btn-primary" onClick={analyzeImage} disabled={loading}>
                       {loading ? 'Analyzing...' : '🔍 Analyze'}
                     </button>
                   )}
                 </div>
+                {error && <p className="text-error mt-2">{error}</p>}
               </div>
 
               {result && (
@@ -189,7 +165,6 @@ const Analyze = () => {
                     )}
                   </div>
 
-                  {/* ONLY ONE ResultsActions component - it has both buttons */}
                   <ResultsActions result={result} imageFile={image} />
                 </motion.div>
               )}
@@ -197,6 +172,9 @@ const Analyze = () => {
           </motion.div>
         )}
       </div>
+
+      {/* ✅ Chatbot only on Analyze page - gets prediction context */}
+      <Chatbot predictionResult={result} />
     </div>
   );
 };
