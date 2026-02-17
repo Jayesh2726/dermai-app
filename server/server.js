@@ -14,7 +14,7 @@ import multer from "multer";
 import FormData from "form-data";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import pdfRouter from "./routes/pdf.js";
-import chatRouter from "./routes/chat.js";
+// import chatRouter from "./routes/chat.js";
 import uploadRouter from "./routes/upload.js"; // NEW
 
 // =======================
@@ -36,7 +36,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/pdf", pdfRouter);
-app.use("/api/chat", chatRouter);
+// app.use("/api/chat", chatRouter);
 app.use("/api/upload", uploadRouter); // NEW
 
 // multer for image upload
