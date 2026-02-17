@@ -31,42 +31,45 @@ const Chatbot = () => {
   }, [open]);
 
   const sendMessage = async () => {
-    if (!message.trim()) return;
+  if (!message.trim()) return;
 
-    const userMessage = message.trim();
-    setChat((prev) => [...prev, { role: "user", text: userMessage }]);
-    setMessage("");
-    setLoading(true);
+  const userMessage = message.trim();
+  setChat((prev) => [...prev, { role: "user", text: userMessage }]);
+  setMessage("");
+  setLoading(true);
 
-    try {
-      const res = await fetch("http://localhost:5000/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage }),
-      });
+  try {
+    const res = await fetch("https://rag-app-kvjf.onrender.com/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: userMessage }),
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      setTimeout(() => {
-        setChat((prev) => [
-          ...prev,
-          { role: "bot", text: data.reply || "I'm here to help! Could you rephrase your question?" },
-        ]);
-        setLoading(false);
-      }, 500);
-    } catch (error) {
-      setTimeout(() => {
-        setChat((prev) => [
-          ...prev,
-          {
-            role: "bot",
-            text: "I'm having trouble connecting right now. Please try again in a moment.",
-          },
-        ]);
-        setLoading(false);
-      }, 500);
-    }
-  };
+    setChat((prev) => [
+      ...prev,
+      {
+        role: "bot",
+        text:
+          data.answer ||
+          "I'm here to help! Could you rephrase your question?",
+      },
+    ]);
+  } catch (error) {
+    setChat((prev) => [
+      ...prev,
+      {
+        role: "bot",
+        text:
+          "I'm having trouble connecting right now. Please try again in a moment.",
+      },
+    ]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {

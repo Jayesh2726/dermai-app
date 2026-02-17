@@ -134,7 +134,7 @@ export const generatePDF = async (analysisData, outputPath, imageBuffer = null) 
       doc.moveDown(1);
 
       // Disclaimer
-      doc.fontSize(9).fillColor('#DC2626').font('Helvetica-Bold').text('⚠️ IMPORTANT MEDICAL DISCLAIMER', { align: 'center' });
+      doc.fontSize(9).fillColor('#DC2626').font('Helvetica-Bold').text(' WARNING! IMPORTANT MEDICAL DISCLAIMER', { align: 'center' });
       doc.fontSize(8).fillColor('#374151').font('Helvetica').text(
         'This analysis is for educational purposes only and does not constitute a medical diagnosis. Always consult a qualified healthcare provider.',
         { align: 'justify', lineGap: 2 }

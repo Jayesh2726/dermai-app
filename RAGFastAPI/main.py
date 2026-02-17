@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from retriever import retrieve
 from openai import OpenAI
@@ -8,6 +9,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI()
+# Middleware for CORS can be added here if needed
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/")
 def home():
     return {"message": "RAG API is running 🚀"}
