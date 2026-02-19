@@ -9,9 +9,9 @@
 
 **🔗 Quick Links:**
 - [Live Demo](#) (Add your deployed URL)
-- [Architecture Diagram](./DermAI-Architecture-Diagram.drawio)
-- [API Documentation](#-api-integration)
-- [Deployment Guide](#-deployment)
+- [Architecture Diagram](/FlowDiagram.png)
+- [API Documentation](/APIDOCUMENTATION.md)
+- [Deployment Guide](/DEPLOYMENT.md)
 
 ---
 
