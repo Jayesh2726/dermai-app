@@ -40,6 +40,7 @@ The app should now be running with:
 - Frontend on port 3000
 - Backend on port 5000
 - Connected to Flask API on Railway
+- Connected to Flask API on Render
 
 ## Features to Try
 
@@ -47,6 +48,7 @@ The app should now be running with:
 2. **Analyze**: Upload a skin image for AI analysis
 3. **Learn**: Browse the disease library
 4. **About**: Read about the technology
+5. **ChatBot**: Realtime Conversation
 
 ## Need Help?
 
