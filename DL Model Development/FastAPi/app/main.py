@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, UploadFile
 from flask import app
-from FastAPi.predict import predict
+from predict import predict
 
 app = FastAPI()
 
